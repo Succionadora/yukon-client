@@ -5,7 +5,7 @@ export default class RoomFactory {
 
         this.scene = world.scene
 
-        this.rooms = world.crumbs.scenes.rooms
+        this.rooms = world.crumbs.rooms
         this.igloos = world.crumbs.scenes.igloos
         this.games = world.crumbs.games
     }
@@ -22,21 +22,14 @@ export default class RoomFactory {
         }
     }
 
-    createRoom(args) {
-        let config = this.rooms[args.room]
+    createRoom({ room }) {
+        const config = this.rooms[room]
 
-        if (config.key in this.scene.manager.keys) {
-            this.scene.start(config.key)
-
-            return this.scene.get(config.key)
-
-        } else {
-            return this.scene.add(config.key, config.scene, true, { id: args.room })
-        }
+        return this.createScene(config.key, `rooms/${config.path}`, { id: room })
     }
 
     createIgloo(args) {
-        let config = this.igloos[args.type]
+        const config = this.igloos[args.type]
 
         if (config.key in this.scene.manager.keys) {
             this.scene.start(config.key, { args: args })
@@ -48,11 +41,13 @@ export default class RoomFactory {
         }
     }
 
-    createGame(args) {
-        let config = this.games[args.game]
+    createGame({ game }) {
+        const config = this.games[game]
 
-        if (!config.flash) {
-            return this.createRoom({ room: args.game })
+        const isFlash = config.path.endsWith('.swf')
+
+        if (!isFlash) {
+            return this.createScene(config.key, `games/${config.path}`, { id: game })
         }
 
         this.scene.run(this.world.ruffle)
@@ -60,6 +55,24 @@ export default class RoomFactory {
         this.world.ruffle.events.once('update', () => {
             this.world.ruffle.bootGame(config)
         })
+
+        return null
+    }
+
+    async createScene(key, path, data) {
+        try {
+            const sceneClass = (await import(
+                /* webpackInclude: /\.js$/ */
+                `@scenes/${path}`
+            )).default
+
+            return this.scene.add(key, sceneClass, true, data)
+
+        } catch (error) {
+            console.error(error)
+
+            return null
+        }
     }
 
 }

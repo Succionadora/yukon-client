@@ -21,6 +21,7 @@ const crumbFiles = [
     'phone_locations',
     'postcards',
     'quick_keys',
+    'rooms',
     'safe_messages',
     'secret_frames',
     'strings',

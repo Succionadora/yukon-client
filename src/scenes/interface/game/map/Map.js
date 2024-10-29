@@ -262,7 +262,7 @@ export default class Map extends BaseContainer {
     onRoomClick(id) {
         this.close()
 
-        let room = this.crumbs.scenes.rooms[id]
+        let room = this.crumbs.rooms[id]
         if (this.world.room.key == room.key) {
             return
         }

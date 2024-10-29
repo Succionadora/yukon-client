@@ -220,9 +220,9 @@ export default class Phone extends BaseContainer {
     }
 
     joinRoom(roomId) {
-        if (!(roomId in this.crumbs.scenes.rooms)) return
+        if (!(roomId in this.crumbs.rooms)) return
 
-        const room = this.crumbs.scenes.rooms[roomId]
+        const room = this.crumbs.rooms[roomId]
 
         if (this.world.room.key !== room.key) {
             this.world.client.sendJoinRoom(roomId, room.key, room.x, room.y)

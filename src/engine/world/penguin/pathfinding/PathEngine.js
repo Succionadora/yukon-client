@@ -23,7 +23,7 @@ export default class PathEngine {
 
         let room = (penguin.room.isIgloo)
             ? penguin.crumbs.scenes.igloos[penguin.room.args.type]
-            : penguin.crumbs.scenes.rooms[penguin.room.id]
+            : penguin.crumbs.rooms[penguin.room.id]
 
         for (let i = 0; i < 25; i++) {
             let random = this.getRandomPos(room.x, room.y, 80)

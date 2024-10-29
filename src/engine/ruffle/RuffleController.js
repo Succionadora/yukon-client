@@ -90,8 +90,8 @@ export default class RuffleController extends BaseScene {
             joinRoom: (roomId) => {
                 this.close()
 
-                if (roomId in this.crumbs.scenes.rooms) {
-                    const room = this.crumbs.scenes.rooms[roomId]
+                if (roomId in this.crumbs.rooms) {
+                    const room = this.crumbs.rooms[roomId]
 
                     this.world.client.sendJoinRoom(roomId, room.key, room.x, room.y)
                 }

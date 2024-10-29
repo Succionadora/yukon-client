@@ -1,6 +1,5 @@
 import fonts from './fonts'
 import igloos from './igloos'
-import rooms from './rooms'
 import widgets from './widgets'
 
 import SoundFileFactory from '@engine/sound/SoundFileFactory'
@@ -59,8 +58,7 @@ const game = {
         fonts: fonts,
 
         scenes: {
-            igloos: igloos,
-            rooms: rooms
+            igloos: igloos
         },
 
         widgets: widgets,

@@ -131,11 +131,11 @@ export default class InterfaceController extends BaseScene {
     }
 
     showTourMessage(id, roomId) {
-        if (!(roomId in this.crumbs.scenes.rooms)) {
+        if (!(roomId in this.crumbs.rooms)) {
             return
         }
 
-        const roomName = this.crumbs.scenes.rooms[roomId].key.toLowerCase()
+        const roomName = this.crumbs.rooms[roomId].key.toLowerCase()
         const message = this.crumbs.tour_messages[roomName]
 
         if (message) {
