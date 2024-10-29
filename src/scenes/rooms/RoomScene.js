@@ -159,9 +159,16 @@ export default class RoomScene extends BaseScene {
     }
 
     stop() {
+        const memory = this.memory
+
+        this.events.once('destroy', () =>
+            memory.unloadPack(`${this.key.toLowerCase()}-pack`)
+        )
+
         this.interface.main.snowballFactory.clearBalls()
         this.soundManager.stopAllButMusic()
-        this.scene.stop()
+
+        this.scene.remove()
     }
 
     getWaiting(id) {
