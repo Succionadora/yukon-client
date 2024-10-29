@@ -61,10 +61,7 @@ let config = {
             '@engine': path.resolve(__dirname, 'src/engine'),
             '@scenes': path.resolve(__dirname, 'src/scenes'),
             '@components': path.resolve(__dirname, 'src/scenes/components'),
-            '@rooms': path.resolve(__dirname, 'src/scenes/rooms'),
-            '@games': path.resolve(__dirname, 'src/scenes/games'),
-            '@igloos': path.resolve(__dirname, 'src/scenes/igloos'),
-            '@parties': path.resolve(__dirname, 'src/scenes/parties')
+            '@igloos': path.resolve(__dirname, 'src/scenes/igloos')
         }
     },
     module: {
