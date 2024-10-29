@@ -1,6 +1,7 @@
 import BaseScene from '@scenes/base/BaseScene'
 
 import InterfaceController from '@engine/interface/InterfaceController'
+import MemoryManager from '@engine/memory/MemoryManager'
 import WorldController from '@engine/world/WorldController'
 import RuffleController from '@engine/ruffle/RuffleController'
 
@@ -12,6 +13,7 @@ export default class Boot extends BaseScene {
 
     create() {
         this.scene.add('InterfaceController', InterfaceController)
+        this.scene.add('MemoryManager', MemoryManager)
         this.scene.add('WorldController', WorldController)
         this.scene.add('RuffleController', RuffleController)
 

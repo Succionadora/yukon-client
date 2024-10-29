@@ -16,6 +16,10 @@ export default class BaseScene extends Phaser.Scene {
         return this.game.soundManager
     }
 
+    get memory() {
+        return this.scene.get('MemoryManager')
+    }
+
     get interface() {
         return this.scene.get('InterfaceController')
     }
