@@ -6,7 +6,7 @@ export default class RoomFactory {
         this.scene = world.scene
 
         this.rooms = world.crumbs.rooms
-        this.igloos = world.crumbs.scenes.igloos
+        this.igloos = world.crumbs.igloos
         this.games = world.crumbs.games
     }
 
@@ -31,14 +31,7 @@ export default class RoomFactory {
     createIgloo(args) {
         const config = this.igloos[args.type]
 
-        if (config.key in this.scene.manager.keys) {
-            this.scene.start(config.key, { args: args })
-
-            return this.scene.get(config.key)
-
-        } else {
-            return this.scene.add(config.key, config.scene, true, { args: args })
-        }
+        return this.createScene(config.key, `igloos/${config.path}`, { args: args })
     }
 
     createGame({ game }) {

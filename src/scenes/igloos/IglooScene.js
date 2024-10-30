@@ -243,7 +243,7 @@ export default class IglooScene extends RoomScene {
     }
 
     updateIgloo(type) {
-        if (this.id != this.world.client.id || this.args.type == type || !(type in this.crumbs.scenes.igloos)) {
+        if (this.id != this.world.client.id || this.args.type == type || !(type in this.crumbs.igloos)) {
             return
         }
 
