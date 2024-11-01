@@ -42,8 +42,6 @@ export default class IglooScene extends RoomScene {
 
         this.pets = {}
 
-        this.events.once('shutdown', () => this.onShutdown())
-
         super.init()
     }
 
@@ -74,10 +72,6 @@ export default class IglooScene extends RoomScene {
         let activeQuantity = (this.quantities[item]) ? this.quantities[item] : 0
 
         return Math.max(inventoryQuantity - activeQuantity, 0)
-    }
-
-    onShutdown() {
-        this.interface.hideIglooEdit()
     }
 
     create() {
@@ -272,6 +266,12 @@ export default class IglooScene extends RoomScene {
 
         this.pets[pet.id] = iglooPet
         this.add.existing(iglooPet)
+    }
+
+    stop() {
+       this.interface.hideIglooEdit()
+
+       super.stop()
     }
 
     /*========== Physics ==========*/
