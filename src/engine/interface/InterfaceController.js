@@ -181,7 +181,7 @@ export default class InterfaceController extends BaseScene {
         }
     }
 
-    loadWidget(key, addToWidgetLayer = false) {
+    async loadWidget(key, addToWidgetLayer = false) {
         if (!(key in this.widgets)) {
             return
         }
@@ -190,8 +190,15 @@ export default class InterfaceController extends BaseScene {
             return this.showWidget(this.loadedWidgets[key])
         }
 
-        const preload = this.widgets[key].preload
-        const callback = () => this.onWidgetLoaded(key, addToWidgetLayer)
+        const { path } = this.widgets[key]
+
+        const widgetClass = (await import(
+            /* webpackInclude: /\.js$/ */
+            `@scenes/${path}`
+        ))
+
+        const preload = widgetClass.preload
+        const callback = () => this.onWidgetLoaded(key, widgetClass, addToWidgetLayer)
 
         if (!preload) {
             callback()
@@ -213,10 +220,10 @@ export default class InterfaceController extends BaseScene {
         }
     }
 
-    onWidgetLoaded(key, addToWidgetLayer) {
+    onWidgetLoaded(key, widgetClass, addToWidgetLayer) {
         const scene = (addToWidgetLayer) ? this.main : this
 
-        const widget = new this.widgets[key].default(scene)
+        const widget = new widgetClass.default(scene)
 
         this.loadedWidgets[key] = widget
 

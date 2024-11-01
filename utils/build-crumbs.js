@@ -27,6 +27,7 @@ const crumbFiles = [
     'strings',
     'tour_messages',
     'tour_quiz',
+    'widgets',
     'worlds'
 ]
 
