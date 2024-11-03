@@ -2,6 +2,7 @@ import BaseScene from '@scenes/base/BaseScene'
 
 import Hint from '@scenes/interface/game/hint/Hint'
 import MetricsManager from './metrics/MetricsManager'
+import PackFileLoader from '@engine/loaders/PackFileLoader'
 import PromptController from './prompt/PromptController'
 
 
@@ -19,9 +20,16 @@ export default class InterfaceController extends BaseScene {
 
         this.prompt = new PromptController(this)
 
-        this.widgets = this.crumbs.widgets
         // Dynamically loaded widgets
         this.loadedWidgets = {}
+
+        this.widgetLoader = new PackFileLoader(this)
+
+        this.widgetLoader.on('progress', progress =>
+            this.prompt.loading.setProgress(progress)
+        )
+
+        this.currentLoadingWidget = null
 
         // Draw frame
         const graphics = this.add.graphics()
@@ -182,19 +190,19 @@ export default class InterfaceController extends BaseScene {
     }
 
     async loadWidget(key, addToWidgetLayer = false) {
-        if (!(key in this.widgets)) {
+        if (!(key in this.crumbs.widgets)) {
             return
         }
 
-        if (key in this.loadedWidgets) {
-            return this.showWidget(this.loadedWidgets[key])
-        }
+        this.currentLoadingWidget = key
 
-        const { path } = this.widgets[key]
+        const config = this.crumbs.widgets[key]
+
+        this.prompt.showLoading('Loading')
 
         const widgetClass = (await import(
             /* webpackInclude: /\.js$/ */
-            `@scenes/${path}`
+            `@scenes/${config.path}`
         ))
 
         const preload = widgetClass.preload
@@ -205,24 +213,22 @@ export default class InterfaceController extends BaseScene {
             return
         }
 
-        const text = this.getWidgetLoadString(preload.loadString)
-
-        this.prompt.showLoading(text, preload.key, preload.url, () => {
-            callback()
-        })
-    }
-
-    getWidgetLoadString(loadString) {
-        if (Array.isArray(loadString)) {
-            return this.getString(...loadString)
-        } else {
-            return this.getString(loadString)
-        }
+        this.widgetLoader.loadPack(preload.key, preload.url, () => callback())
     }
 
     onWidgetLoaded(key, widgetClass, addToWidgetLayer) {
-        const scene = (addToWidgetLayer) ? this.main : this
+        const createWidget = this.prompt.loading.visible && key === this.currentLoadingWidget
 
+        // Floating widgets skip createWidget check
+        if (!addToWidgetLayer && !createWidget) {
+            return
+        }
+
+        if (key === this.currentLoadingWidget) {
+            this.prompt.loading.close()
+        }
+
+        const scene = addToWidgetLayer ? this.main : this
         const widget = new widgetClass.default(scene)
 
         this.loadedWidgets[key] = widget
