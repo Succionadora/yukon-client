@@ -24,6 +24,10 @@ export default class BaseLoader extends Phaser.Loader.LoaderPlugin {
         return this.scene.world
     }
 
+    get memory() {
+        return this.scene.memory
+    }
+
     getKey(...args) {
         let key = args.join('')
         let prefix = this.keyPrefix || ''
