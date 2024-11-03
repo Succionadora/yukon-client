@@ -1,7 +1,53 @@
 import BaseScene from '@scenes/base/BaseScene'
 
 
+const cleanupDelay = 10000
+
 export default class MemoryManager extends BaseScene {
+
+    registered = {}
+
+    create() {
+        this.time.addEvent({
+            delay: cleanupDelay,
+            callback: () => this.cleanup(),
+            loop: true
+        })
+    }
+
+    cleanup() {
+        for (const key in this.registered) {
+            this.cleanupCheck(key, this.registered[key])
+        }
+    }
+
+    cleanupCheck(key, asset) {
+        const setStale = asset.staleCheck()
+
+        if (!setStale) {
+            return
+        }
+
+        if (asset.stale) {
+            asset.unload()
+            delete this.registered[key]
+        } else {
+            asset.stale = true
+        }
+    }
+
+    register(key, staleCheck, unload) {
+        if (key in this.registered) {
+            this.registered[key].stale = false
+            return
+        }
+
+        this.registered[key] = {
+            stale: false,
+            staleCheck,
+            unload
+        }
+    }
 
     unloadPack(key) {
         const pack = this.cache.json.get(key)
