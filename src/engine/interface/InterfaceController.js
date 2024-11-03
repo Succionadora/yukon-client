@@ -1,5 +1,6 @@
 import BaseScene from '@scenes/base/BaseScene'
 
+import drawFrame from './frame/drawFrame'
 import Hint from '@scenes/interface/game/hint/Hint'
 import MetricsManager from './metrics/MetricsManager'
 import PackFileLoader from '@engine/loaders/PackFileLoader'
@@ -31,12 +32,7 @@ export default class InterfaceController extends BaseScene {
 
         this.currentLoadingWidget = null
 
-        // Draw frame
-        const graphics = this.add.graphics()
-
-        graphics.lineStyle(16, this.crumbs.frameColor, 1)
-        graphics.strokeRoundedRect(0, 0, 1520, 960, 15)
-        graphics.depth = 100
+        drawFrame(this)
 
         // Last scene interacted with
         this.lastScene
