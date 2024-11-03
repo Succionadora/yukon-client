@@ -58,6 +58,12 @@ export default class ClothingLoader extends BaseLoader {
             return
         }
 
+        this.memory.register(
+            key,
+            staleCheck.bind(this.memory, item),
+            unload.bind(this.memory, key)
+        )
+
         let check = adjustRedemptionItem(item)
 
         // Checks secret frames
@@ -109,4 +115,24 @@ export default class ClothingLoader extends BaseLoader {
         this.penguin.playFrame(this.penguin.frame)
     }
 
+}
+
+function staleCheck(item) {
+    if (!this.world.room?.penguins) {
+        return true
+    }
+
+    for (const penguin of Object.values(this.world.room.penguins)) {
+        const items = Object.values(penguin.items.equippedFlat)
+
+        if (items.includes(item)) {
+            return false
+        }
+    }
+
+    return true
+}
+
+function unload(key) {
+    this.unloadMultiatlas(key)
 }
