@@ -633,7 +633,7 @@ export default class Main extends BaseScene {
     }
 
     onPhoneClick() {
-        this.interface.showWidget(this.phone)
+        this.phone.show()
     }
 
     onMapClick() {
