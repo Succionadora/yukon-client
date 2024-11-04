@@ -190,6 +190,10 @@ export default class InterfaceController extends BaseScene {
             return
         }
 
+        if (key in this.loadedWidgets) {
+            return
+        }
+
         this.currentLoadingWidget = key
 
         const config = this.crumbs.widgets[key]
