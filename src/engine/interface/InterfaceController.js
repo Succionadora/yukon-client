@@ -241,6 +241,14 @@ export default class InterfaceController extends BaseScene {
         })
     }
 
+    removeWidget(widget) {
+        for (const key in this.loadedWidgets) {
+            if (this.loadedWidgets[key] === widget) {
+                delete this.loadedWidgets[key]
+            }
+        }
+    }
+
     updateCatalogCoins(coins) {
         const books = Object.values(this.loadedWidgets).filter(
             widget => widget.isBook
