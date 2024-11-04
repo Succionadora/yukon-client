@@ -27,12 +27,7 @@ let config = {
         static: {
             directory: path.resolve(__dirname),
             publicPath: '/',
-            watch: {
-                ignored: [
-                    path.resolve(__dirname, '.git'),
-                    path.resolve(__dirname, 'node_modules')
-                ]
-            }
+            watch: false
         },
         devMiddleware: {
             writeToDisk: true
