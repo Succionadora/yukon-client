@@ -3,8 +3,8 @@ import BaseScene from '@scenes/base/BaseScene'
 import drawFrame from './frame/drawFrame'
 import Hint from '@scenes/interface/game/hint/Hint'
 import MetricsManager from './metrics/MetricsManager'
-import PackFileLoader from '@engine/loaders/PackFileLoader'
 import PromptController from './prompt/PromptController'
+import WidgetManager from './widget/WidgetManager'
 
 
 const Status = Phaser.Scenes
@@ -21,16 +21,8 @@ export default class InterfaceController extends BaseScene {
 
         this.prompt = new PromptController(this)
 
-        // Dynamically loaded widgets
-        this.loadedWidgets = {}
-
-        this.widgetLoader = new PackFileLoader(this)
-
-        this.widgetLoader.on('progress', progress =>
-            this.prompt.loading.setProgress(progress)
-        )
-
-        this.currentLoadingWidget = null
+        this.widgets = new WidgetManager(this)
+        this.add.existing(this.widgets)
 
         drawFrame(this)
 
@@ -120,7 +112,7 @@ export default class InterfaceController extends BaseScene {
             this.scene.bringToTop(scene)
         }
 
-        // Keeps InterfaceController scene always on top, for prompts
+        // Keeps InterfaceController scene always on top
         this.scene.bringToTop()
 
         this.input.setDefaultCursor('default')
@@ -185,78 +177,18 @@ export default class InterfaceController extends BaseScene {
         }
     }
 
-    async loadWidget(key, addToWidgetLayer = false) {
-        if (!(key in this.crumbs.widgets)) {
-            return
-        }
-
-        if (key in this.loadedWidgets) {
-            return
-        }
-
-        this.currentLoadingWidget = key
-
-        const config = this.crumbs.widgets[key]
-
-        this.prompt.showLoading('Loading')
-
-        const widgetClass = (await import(
-            /* webpackInclude: /\.js$/ */
-            `@scenes/${config.path}`
-        ))
-
-        const preload = widgetClass.preload
-        const callback = () => this.onWidgetLoaded(key, widgetClass, addToWidgetLayer)
-
-        if (!preload) {
-            callback()
-            return
-        }
-
-        this.widgetLoader.loadPack(preload.key, preload.url, () => callback())
+    loadWidget(key, addToWidgetLayer = false) {
+        this.widgets.loadWidget(key, addToWidgetLayer)
     }
 
-    onWidgetLoaded(key, widgetClass, addToWidgetLayer) {
-        const createWidget = this.prompt.loading.visible && key === this.currentLoadingWidget
-
-        // Floating widgets skip createWidget check
-        if (!addToWidgetLayer && !createWidget) {
-            return
-        }
-
-        if (key === this.currentLoadingWidget) {
-            this.prompt.loading.close()
-        }
-
-        const scene = addToWidgetLayer ? this.main : this
-        const widget = new widgetClass.default(scene)
-
-        this.loadedWidgets[key] = widget
-
-        if (addToWidgetLayer) {
-            this.main.addToWidgetLayer(widget)
-        } else {
-            this.add.existing(widget)
-            widget.depth = -1
-        }
-
-        scene.events.once('update', () => {
-            this.showWidget(widget)
-        })
     }
 
     removeWidget(widget) {
-        for (const key in this.loadedWidgets) {
-            if (this.loadedWidgets[key] === widget) {
-                delete this.loadedWidgets[key]
-            }
-        }
+        this.widgets.removeWidget(widget)
     }
 
     updateCatalogCoins(coins) {
-        const books = Object.values(this.loadedWidgets).filter(
-            widget => widget.isBook
-        )
+        const books = this.widgets.findWidget(widget => widget.isBook)
 
         books.forEach(book => {
             if (book.coins) {
