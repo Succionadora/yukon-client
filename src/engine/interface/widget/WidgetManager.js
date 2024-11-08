@@ -149,7 +149,15 @@ export default class WidgetManager extends BaseLayer {
         }
     }
 
+    closeWidgets() {
+        for (const widget of this.activeWidgetObjects) {
+            widget.close()
+        }
+    }
+
     unloadWidgets() {
+        this.closeWidgets()
+
         for (const key of this.loadedPacks) {
             this.memory.unloadPack(key)
         }
