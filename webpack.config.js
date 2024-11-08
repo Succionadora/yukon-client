@@ -47,6 +47,9 @@ let config = {
 
             '/create/scripts/php': 'http://localhost:80'
         },
+        client: {
+            overlay: false
+        },
         host: 'localhost',
         port: 8080,
         hot: false
