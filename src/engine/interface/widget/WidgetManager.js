@@ -26,6 +26,10 @@ export default class WidgetManager extends BaseLayer {
         )
     }
 
+    get activeWidgetObjects() {
+        return Object.values(this.activeWidgets)
+    }
+
     onFileComplete(key, type) {
         if (type === 'packfile') {
             this.loadedPacks.push(key)
@@ -134,7 +138,7 @@ export default class WidgetManager extends BaseLayer {
     }
 
     findWidget(filter) {
-        return Object.values(this.activeWidgets).filter(filter)
+        return this.activeWidgetObjects.filter(filter)
     }
 
     removeWidget(widget) {
