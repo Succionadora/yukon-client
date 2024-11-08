@@ -459,14 +459,6 @@ export default class Main extends BaseScene {
         for (let item of this.hideOnSleep) {
             item.visible = false
         }
-
-        for (let widget in this.interface.loadedWidgets) {
-            widget = this.interface.loadedWidgets[widget]
-
-            if (widget.visible) {
-                widget.close()
-            }
-        }
     }
 
     onWake() {

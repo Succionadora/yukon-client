@@ -66,6 +66,8 @@ export default class InterfaceController extends BaseScene {
     }
 
     hideInterface(clearChat = true) {
+        this.closeWidgets()
+
         this.sleepScene(this.main, { clearChat })
     }
 
@@ -181,10 +183,16 @@ export default class InterfaceController extends BaseScene {
         this.widgets.loadWidget(key, addToWidgetLayer)
     }
 
-    }
-
     removeWidget(widget) {
         this.widgets.removeWidget(widget)
+    }
+
+    closeWidgets() {
+        this.widgets?.closeWidgets()
+    }
+
+    unloadWidgets() {
+        this.widgets.unloadWidgets()
     }
 
     updateCatalogCoins(coins) {
