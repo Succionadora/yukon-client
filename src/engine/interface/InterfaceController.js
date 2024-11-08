@@ -179,8 +179,8 @@ export default class InterfaceController extends BaseScene {
         }
     }
 
-    loadWidget(key, addToWidgetLayer = false) {
-        this.widgets.loadWidget(key, addToWidgetLayer)
+    loadWidget(key, floatingLayer = null) {
+        this.widgets.loadWidget(key, floatingLayer)
     }
 
     removeWidget(widget) {

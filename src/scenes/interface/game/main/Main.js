@@ -467,12 +467,8 @@ export default class Main extends BaseScene {
 
     setupWidgets() {
         for (let widget of this.widgetLayer.list) {
-            this.setupWidget(widget)
+            widget.floatingLayer = this.widgetLayer
         }
-    }
-
-    setupWidget(widget) {
-        widget.widgetLayer = this.widgetLayer
     }
 
     addToWidgetLayer(widget) {
@@ -529,7 +525,7 @@ export default class Main extends BaseScene {
     }
 
     onBuddyClick() {
-        this.interface.showWidget(this.buddy)
+        this.buddy.show()
     }
 
     onIglooClick() {

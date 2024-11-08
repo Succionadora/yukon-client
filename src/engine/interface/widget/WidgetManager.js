@@ -36,7 +36,7 @@ export default class WidgetManager extends BaseLayer {
         }
     }
 
-    async loadWidget(key, addToWidgetLayer) {
+    async loadWidget(key, floatingLayer) {
         if (!(this.keyExists(key)) || this.keyActive(key)) {
             return
         }
@@ -50,7 +50,7 @@ export default class WidgetManager extends BaseLayer {
         }
 
         const preload = widgetClass.preload
-        const callback = () => this.onWidgetLoaded(key, widgetClass.default, addToWidgetLayer)
+        const callback = () => this.onWidgetLoaded(key, widgetClass.default, floatingLayer)
 
         if (!preload) {
             callback()
@@ -82,11 +82,11 @@ export default class WidgetManager extends BaseLayer {
         }
     }
 
-    onWidgetLoaded(key, widgetClass, addToWidgetLayer) {
+    onWidgetLoaded(key, widgetClass, floatingLayer) {
         const createWidget = this.isLoadingVisible && key === this.lastLoadingKey
 
         // Floating widgets skip createWidget check
-        if (!addToWidgetLayer && !createWidget) {
+        if (!floatingLayer && !createWidget) {
             return
         }
 
@@ -94,20 +94,20 @@ export default class WidgetManager extends BaseLayer {
             this.closeLoading()
         }
 
-        this.createWidget(key, widgetClass, addToWidgetLayer)
+        this.createWidget(key, widgetClass, floatingLayer)
     }
 
-    createWidget(key, widgetClass, addToWidgetLayer) {
-        const scene = addToWidgetLayer
-            ? this.interface.main
+    createWidget(key, widgetClass, floatingLayer) {
+        const scene = floatingLayer
+            ? floatingLayer.scene
             : this.scene
 
         const widget = new widgetClass(scene)
 
         this.activeWidgets[key] = widget
 
-        if (addToWidgetLayer) {
-            this.interface.main.addToWidgetLayer(widget)
+        if (floatingLayer) {
+            widget.floatingLayer = floatingLayer
         } else {
             this.add(widget)
         }
