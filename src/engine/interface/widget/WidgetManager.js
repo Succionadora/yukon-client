@@ -158,9 +158,7 @@ export default class WidgetManager extends BaseLayer {
     unloadWidgets() {
         this.closeWidgets()
 
-        for (const key of this.loadedPacks) {
-            this.memory.unloadPack(key)
-        }
+        this.memory.unloadPacks(this.loadedPacks)
 
         this.loadedPacks = []
     }

@@ -67,6 +67,12 @@ export default class MemoryManager extends BaseScene {
         this.unloadJson(key)
     }
 
+    unloadPacks(packs) {
+        for (const key of packs) {
+            this.unloadPack(key)
+        }
+    }
+
     unloadPackFiles(files) {
         for (const file of files) {
             switch (file.type) {
