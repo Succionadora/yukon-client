@@ -30,6 +30,10 @@ export default class WidgetManager extends BaseLayer {
         return Object.values(this.activeWidgets)
     }
 
+    get isLoadingVisible() {
+        return this.interface.prompt.loading.visible
+    }
+
     onFileComplete(key, type) {
         if (type === 'packfile') {
             this.loadedPacks.push(key)
@@ -123,10 +127,6 @@ export default class WidgetManager extends BaseLayer {
 
     setLoadingProgress(progress) {
         this.interface.prompt.loading.setProgress(progress)
-    }
-
-    isLoadingVisible() {
-        return this.interface.prompt.loading.visible
     }
 
     keyExists(key) {
