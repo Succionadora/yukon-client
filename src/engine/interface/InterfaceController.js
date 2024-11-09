@@ -161,24 +161,6 @@ export default class InterfaceController extends BaseScene {
         }
     }
 
-    showWidget(widget) {
-        if (widget.widgetLayer) {
-            widget.widgetLayer.bringToTop(widget)
-        }
-
-        widget.show()
-    }
-
-    destroyWidget(widget) {
-        widget.destroy()
-
-        for (const key in this.loadedWidgets) {
-            if (this.loadedWidgets[key] == widget) {
-                delete this.loadedWidgets[key]
-            }
-        }
-    }
-
     loadWidget(key, floatingLayer = null) {
         this.widgets.loadWidget(key, floatingLayer)
     }
