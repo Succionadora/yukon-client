@@ -1,16 +1,18 @@
-import BaseContainer from '@scenes/base/BaseContainer'
-
-import { Animation, Button, DraggableContainer, Interactive } from '@components/components'
-
-import Inventory from './inventory/Inventory'
-import InventorySort from './inventory_sort/InventorySort'
-import Buttons from './buttons/Buttons'
-import PaperDoll from './paperdoll/PaperDoll'
-
-
 /* START OF COMPILED CODE */
 
-export default class PlayerCard extends BaseContainer {
+import BaseWidget from "../../../base/BaseWidget";
+import DraggableContainer from "../../../components/DraggableContainer";
+import Interactive from "../../../components/Interactive";
+import PaperDoll from "./paperdoll/PaperDoll";
+import Buttons from "./buttons/Buttons";
+import Button from "../../../components/Button";
+import InventorySort from "./inventory_sort/InventorySort";
+import Inventory from "./inventory/Inventory";
+import Animation from "../../../components/Animation";
+/* START-USER-IMPORTS */
+/* END-USER-IMPORTS */
+
+export default class PlayerCard extends BaseWidget {
 
     constructor(scene, x, y) {
         super(scene, x ?? 760, y ?? 460);
@@ -21,20 +23,20 @@ export default class PlayerCard extends BaseContainer {
         this.paperDoll;
         /** @type {Buttons} */
         this.buttons;
-        /** @type {Phaser.GameObjects.Container} */
-        this.stats;
         /** @type {Phaser.GameObjects.Text} */
         this.coins;
+        /** @type {Phaser.GameObjects.Container} */
+        this.stats;
         /** @type {Phaser.GameObjects.Text} */
         this.username;
         /** @type {InventorySort} */
         this.inventorySort;
         /** @type {Inventory} */
         this.inventory;
-        /** @type {Phaser.GameObjects.Container} */
-        this.badge;
         /** @type {Phaser.GameObjects.Image} */
         this.stripes;
+        /** @type {Phaser.GameObjects.Container} */
+        this.badge;
 
 
         // card_photo
@@ -135,7 +137,7 @@ export default class PlayerCard extends BaseContainer {
         // x_button (components)
         const x_buttonButton = new Button(x_button);
         x_buttonButton.spriteName = "blue-button";
-        x_buttonButton.callback = () => { this.visible = false };
+        x_buttonButton.callback = () => this.close();
 
         // badge_lines_lines (components)
         const badge_lines_linesAnimation = new Animation(badge_lines_lines);
@@ -145,13 +147,13 @@ export default class PlayerCard extends BaseContainer {
         this.photo = photo;
         this.paperDoll = paperDoll;
         this.buttons = buttons;
-        this.stats = stats;
         this.coins = coins;
+        this.stats = stats;
         this.username = username;
         this.inventorySort = inventorySort;
         this.inventory = inventory;
-        this.badge = badge;
         this.stripes = stripes;
+        this.badge = badge;
 
         /* START-USER-CTR-CODE */
 
@@ -174,7 +176,7 @@ export default class PlayerCard extends BaseContainer {
     showCard(id, refresh = false) {
         // Don't open player's card if it's already open
         if (id == this.id && this.visible && !refresh) {
-            this.interface.showWidget(this)
+            super.show()
             return
         }
 
@@ -224,7 +226,7 @@ export default class PlayerCard extends BaseContainer {
         this.updateButtons()
         this.updateBadge(penguin.joinTime)
 
-        this.interface.showWidget(this)
+        super.show()
     }
 
     updateButtons() {
