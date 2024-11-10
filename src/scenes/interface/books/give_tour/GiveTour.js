@@ -101,7 +101,6 @@ export default class GiveTour extends BookContainer {
 
         // page1
         const page1 = scene.add.container(0, 0);
-        page1.visible = false;
         this.add(page1);
 
         // page0001
