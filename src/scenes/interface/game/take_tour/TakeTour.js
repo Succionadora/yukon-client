@@ -6,14 +6,14 @@ export const preload = {
 
 /* START OF COMPILED CODE */
 
-import BaseContainer from "../../../base/BaseContainer";
+import BaseDynamicWidget from "../../../base/BaseDynamicWidget";
 import Interactive from "../../../components/Interactive";
 import SimpleButton from "../../../components/SimpleButton";
 import Button from "../../../components/Button";
 /* START-USER-IMPORTS */
 /* END-USER-IMPORTS */
 
-export default class TakeTour extends BaseContainer {
+export default class TakeTour extends BaseDynamicWidget {
 
     constructor(scene, x, y) {
         super(scene, x ?? -1, y ?? 0);
@@ -67,8 +67,9 @@ export default class TakeTour extends BaseContainer {
     /* START-USER-CODE */
 
     onButtonClick() {
-        this.close()
         this.interface.loadWidget('TourQuiz')
+
+        this.close()
     }
 
     /* END-USER-CODE */
