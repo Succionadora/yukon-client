@@ -185,12 +185,13 @@ export default class PlayerCard extends BaseWidget {
 
     /* START-USER-CODE */
 
-    show(playerId) {
+    show(playerId, username) {
         if (this.visible && playerId === this.id) {
             return
         }
 
         this.reset()
+        this.setUsername(username)
 
         this.id = playerId
 
