@@ -521,7 +521,7 @@ export default class Main extends BaseScene {
     }
 
     onPlayerClick() {
-        this.playerCard.showCard(this.world.client.id)
+        this.interface.showCard(this.world.client.id, this.world.client.penguin.username)
     }
 
     onBuddyClick() {
