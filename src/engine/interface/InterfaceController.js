@@ -141,8 +141,8 @@ export default class InterfaceController extends BaseScene {
         }
     }
 
-    showCard(id, refresh = false) {
-        this.main.playerCard.showCard(id, refresh)
+    showCard(playerId) {
+        this.main.playerCard.show(playerId)
     }
 
     /**
@@ -156,8 +156,8 @@ export default class InterfaceController extends BaseScene {
     }
 
     refreshPlayerCard() {
-        if (this.main.playerCard.visible && this.main.playerCard.id == this.world.client.id) {
-            this.showCard(this.world.client.id, true)
+        if (this.main.playerCard.visible && this.main.playerCard.id === this.world.client.id) {
+            this.main.playerCard.setCoins(this.world.client.coins)
         }
     }
 

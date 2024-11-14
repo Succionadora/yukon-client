@@ -19,6 +19,8 @@ export default class PlayerCard extends BaseWidget {
 
         /** @type {Phaser.GameObjects.Container} */
         this.photo;
+        /** @type {Phaser.GameObjects.Image} */
+        this.spinner;
         /** @type {PaperDoll} */
         this.paperDoll;
         /** @type {Buttons} */
@@ -48,12 +50,17 @@ export default class PlayerCard extends BaseWidget {
         const photo = scene.add.container(-205, -206);
         this.add(photo);
 
+        // spinner
+        const spinner = scene.add.image(0, -2, "main", "card-spinner");
+        this.add(spinner);
+
         // card_bg
         const card_bg = scene.add.image(0, 0, "main", "card-bg-player");
         this.add(card_bg);
 
         // paperDoll
         const paperDoll = new PaperDoll(scene, 0, 0);
+        paperDoll.visible = false;
         this.add(paperDoll);
 
         // buttons
@@ -63,6 +70,7 @@ export default class PlayerCard extends BaseWidget {
 
         // stats
         const stats = scene.add.container(-13, 255);
+        stats.visible = false;
         this.add(stats);
 
         // card_coin
@@ -98,6 +106,7 @@ export default class PlayerCard extends BaseWidget {
 
         // inventory
         const inventory = new Inventory(scene, -135, 33);
+        inventory.visible = false;
         this.add(inventory);
 
         // badge
@@ -114,7 +123,7 @@ export default class PlayerCard extends BaseWidget {
         badge.add(badge_lines_lines);
 
         // stripes
-        const stripes = scene.add.image(0, 56, "main", "badge/stripes/4");
+        const stripes = scene.add.image(0, 56, "main", "badge/stripes/0");
         stripes.setOrigin(0.5, 0.5051546391752577);
         badge.add(stripes);
 
@@ -145,6 +154,7 @@ export default class PlayerCard extends BaseWidget {
         badge_lines_linesAnimation.end = 180;
 
         this.photo = photo;
+        this.spinner = spinner;
         this.paperDoll = paperDoll;
         this.buttons = buttons;
         this.coins = coins;
@@ -157,8 +167,17 @@ export default class PlayerCard extends BaseWidget {
 
         /* START-USER-CTR-CODE */
 
-        // Active penguin id
+        // Active player id
         this.id = null
+
+        this.spinnerTween = scene.tweens.add({
+            targets: spinner,
+            angle: { from: 0, to: 180 },
+            duration: 900,
+            repeat: -1,
+            ease: 'Cubic',
+            paused: true
+        })
 
         /* END-USER-CTR-CODE */
     }
@@ -166,89 +185,111 @@ export default class PlayerCard extends BaseWidget {
 
     /* START-USER-CODE */
 
-    /**
-     * Shows a player card by id, if the user is found in the current room the penguin object can
-     * be taken from there. Otherwise the penguin object must be fetched from the server.
-     *
-     * @param {number} id - Penguin ID
-     * @param {boolean} refresh - Whether or not a card should pass the already open check
-     */
-    showCard(id, refresh = false) {
-        // Don't open player's card if it's already open
-        if (id == this.id && this.visible && !refresh) {
-            super.show()
+    show(playerId) {
+        if (this.visible && playerId === this.id) {
             return
         }
 
-        if (id in this.world.room.penguins) {
-            let penguin = this.world.room.penguins[id]
-            this._showCard(penguin, penguin.items.flat)
+        this.reset()
+
+        this.id = playerId
+
+        if (playerId in this.world.room.penguins) {
+            this.updatePlayer(this.world.room.penguins[playerId])
 
         } else {
-            // Fetch penguin object from server
-            this.network.send('get_player', { id: id })
+            this.startSpinner()
+            this.network.send('get_player', { id: playerId })
         }
-    }
-
-    /**
-     * Primary showCard function, which accepts a penguin object, and optionally an items object to
-     * fill the player card with the correct data. The items object is not required if the penguin is fetched
-     * from the server due to all necessary data being available from the penguin object.
-     *
-     * @param {object} penguin - Penguin object
-     * @param {object} items - Penguin items object
-     */
-    _showCard(penguin, items = penguin) {
-        // Text
-        this.username.text = penguin.username
-
-        // Paper doll
-        this.paperDoll.loadDoll(items, penguin.isClient)
-
-        // Visible elements
-        if (penguin.isClient) {
-            this.coins.text = `Your Coins: ${this.world.client.coins}`
-            this.stats.visible = true
-            this.buttons.visible = false
-            this.inventory.visible = true
-            this.inventory.showPage()
-
-        } else {
-            this.stats.visible = false
-            this.buttons.visible = true
-            this.inventory.visible = false
-        }
-
-        this.inventorySort.closeMenu()
-
-        this.id = penguin.id
-
-        this.updateButtons()
-        this.updateBadge(penguin.joinTime)
 
         super.show()
     }
 
+    close() {
+        super.close()
+        this.reset()
+    }
+
+    updatePlayer(player) {
+        const { id, username, joinTime, isClient } = player
+
+        if (id !== this.id) {
+            return
+        }
+
+        this.updateElements({
+            username,
+            coins: isClient ? this.world.client.coins : 0,
+            isClient
+        })
+
+        this.loadDoll(player.items?.flat || player, isClient)
+
+        this.updateButtons()
+        this.updateBadge(joinTime)
+
+        this.inventorySort.closeMenu()
+    }
+
+    updateElements({ username, coins, isClient }) {
+        this.setUsername(username)
+        this.setCoins(coins)
+
+        this.inventory.visible = isClient
+        this.stats.visible = isClient
+        this.buttons.visible = !isClient
+
+        if (isClient) {
+            this.updateInventory()
+        }
+    }
+
+    setUsername(username) {
+        this.username.text = username
+    }
+
+    setCoins(coins) {
+        this.coins.text = `Your Coins: ${coins}`
+    }
+
+    updateInventory() {
+        this.inventory.showPage()
+    }
+
+    loadDoll(items, isClient) {
+        this.paperDoll.visible = true
+        this.paperDoll.loadDoll(items, isClient)
+    }
+
+    resetDoll() {
+        this.paperDoll.visible = false
+        this.paperDoll.removeItems()
+    }
+
     updateButtons() {
         if (this.buttons.visible) {
-            let relationship = this.world.getRelationship(this.id)
+            const relationship = this.world.getRelationship(this.id)
+
             this.buttons.updateButtons(relationship)
         }
     }
 
-    updateBadge(joinTime) {
+    resetButtons() {
+        this.buttons.resetButtons()
+    }
+
+    updateBadge(joinTime = null) {
+        this.badge.visible = !!joinTime
+
         if (!joinTime) {
-            this.badge.visible = false
             return
         }
 
-        this.badge.visible = true
+        const oneDay = 1000 * 60 * 60 * 24
+        const timeDiff = Date.now() - Date.parse(joinTime)
+        const daysDiff = Math.round(timeDiff / oneDay)
 
-        let oneDay = 1000 * 60 * 60 * 24
-        let timeDiff = Date.now() - Date.parse(joinTime)
-        let daysDiff = Math.round(timeDiff / oneDay)
-
-        let months = Math.floor(daysDiff / 30)
+        const months = Math.floor(daysDiff / 30)
         let frame
 
         if (months <= 6) {
@@ -264,6 +305,37 @@ export default class PlayerCard extends BaseWidget {
         }
 
         this.stripes.setFrame(`badge/stripes/${frame}`)
+    }
+
+    startSpinner() {
+        this.spinnerTween.seek(0)
+        this.spinnerTween.resume()
+
+        this.spinner.visible = true
+    }
+
+    stopSpinner() {
+        this.spinner.visible = false
+
+        this.spinnerTween.pause()
+        this.spinner.angle = 0
+    }
+
+    reset() {
+        this.id = null
+
+        this.updateElements({
+            username: '',
+            coins: 0,
+            isClient: false
+        })
+
+        this.resetDoll()
+
+        this.resetButtons()
+        this.updateBadge()
+
+        this.stopSpinner()
     }
 
     /* END-USER-CODE */

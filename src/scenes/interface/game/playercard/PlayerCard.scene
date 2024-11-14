@@ -51,6 +51,17 @@
                 },
                 {
                     "type": "Image",
+                    "id": "fa98718d-4913-4025-b587-7302dd9f4ed4",
+                    "label": "spinner",
+                    "scope": "CLASS",
+                    "texture": {
+                        "key": "main",
+                        "frame": "card-spinner"
+                    },
+                    "y": -2
+                },
+                {
+                    "type": "Image",
                     "id": "fe294108-b9df-4ff7-8a4c-2b4ee0d81d76",
                     "label": "card_bg",
                     "texture": {
@@ -63,12 +74,14 @@
                     "id": "d6bbac10-17e0-44da-902d-f6dfbbe8bc93",
                     "unlock": [
                         "x",
-                        "y"
+                        "y",
+                        "visible"
                     ],
                     "label": "paperDoll",
                     "scope": "CLASS",
                     "x": 0,
-                    "y": 0
+                    "y": 0,
+                    "visible": false
                 },
                 {
                     "prefabId": "8808181a-7877-4aef-982e-f4ba2441da75",
@@ -91,6 +104,7 @@
                     "scope": "CLASS",
                     "x": -13,
                     "y": 255,
+                    "visible": false,
                     "list": [
                         {
                             "type": "Image",
@@ -180,12 +194,14 @@
                     "id": "2c78d474-38e5-4639-85d4-0191679ebb81",
                     "unlock": [
                         "x",
-                        "y"
+                        "y",
+                        "visible"
                     ],
                     "label": "inventory",
                     "scope": "CLASS",
                     "x": -135,
-                    "y": 33
+                    "y": 33,
+                    "visible": false
                 },
                 {
                     "type": "Container",
@@ -228,7 +244,7 @@
                             "scope": "CLASS",
                             "texture": {
                                 "key": "main",
-                                "frame": "badge/stripes/4"
+                                "frame": "badge/stripes/0"
                             },
                             "y": 56,
                             "originY": 0.5051546391752577
