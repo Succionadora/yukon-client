@@ -136,7 +136,7 @@ export default class ChatLog extends BaseContainer {
     }
 
     onMessageClick(id) {
-        if (id) {
+        if (id in this.world.room.penguins || this.world.isBuddy(id)) {
             this.interface.showCard(id)
         }
     }
