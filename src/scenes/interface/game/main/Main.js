@@ -457,7 +457,7 @@ export default class Main extends BaseScene {
         this.interface.prompt.hideAll()
 
         for (let item of this.hideOnSleep) {
-            item.visible = false
+            item.close()
         }
     }
 
