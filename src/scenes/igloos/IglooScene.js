@@ -30,8 +30,9 @@ export default class IglooScene extends RoomScene {
     }
 
     init(data) {
+        super.init({ id: data.args.igloo })
+
         this.args = data.args
-        this.id = data.args.igloo
         this.music = data.args.music
 
         this.loader = new FurnitureLoader(this)
@@ -41,8 +42,6 @@ export default class IglooScene extends RoomScene {
         this.quantities = {}
 
         this.pets = {}
-
-        super.init()
     }
 
     preload() {

@@ -17,10 +17,10 @@ export default class GameScene extends BaseUnloadableScene {
         return this.world.getColor(color)
     }
 
-    init(data) {
-        this.id = data.id
-
+    init({ id }) {
         super.init()
+
+        this.id = id
     }
 
     create() {

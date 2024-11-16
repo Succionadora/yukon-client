@@ -28,12 +28,10 @@ export default class RoomScene extends BaseUnloadableScene {
         return this.world.client
     }
 
-    init(data) {
-        if (!this.id) {
-            this.id = data.id
-        }
-
+    init({ id }) {
         super.init()
+
+        this.id = id
     }
 
     create() {
