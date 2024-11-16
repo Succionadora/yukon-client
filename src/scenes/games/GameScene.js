@@ -1,7 +1,7 @@
-import BaseScene from '@scenes/base/BaseScene'
+import BaseUnloadableScene from '@scenes/base/BaseUnloadableScene'
 
 
-export default class GameScene extends BaseScene {
+export default class GameScene extends BaseUnloadableScene {
 
     constructor(key) {
         super(key)
@@ -39,12 +39,6 @@ export default class GameScene extends BaseScene {
     }
 
     stop() {
-        const memory = this.memory
-
-        this.events.once('destroy', () =>
-            memory.unloadPack(`${this.key.toLowerCase()}-pack`)
-        )
-
         this.soundManager.stopAllButMusic()
 
         this.scene.remove()
