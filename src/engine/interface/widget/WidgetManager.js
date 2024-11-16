@@ -137,6 +137,10 @@ export default class WidgetManager extends BaseLayer {
         return key in this.activeWidgets
     }
 
+    getWidget(key) {
+        return this.activeWidgets[key]
+    }
+
     findWidget(filter) {
         return this.activeWidgetObjects.filter(filter)
     }
