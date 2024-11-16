@@ -1,7 +1,7 @@
-import BaseScene from '@scenes/base/BaseScene'
+import BaseUnloadableScene from '@scenes/base/BaseUnloadableScene'
 
 
-export default class RoomScene extends BaseScene {
+export default class RoomScene extends BaseUnloadableScene {
 
     constructor(key) {
         super(key)
@@ -159,13 +159,9 @@ export default class RoomScene extends BaseScene {
     }
 
     stop() {
-        const world = this.world
-
-        this.events.once('destroy', () => {
-            world.memory.unloadPack(`${this.key.toLowerCase()}-pack`)
-
-            world.interface.unloadWidgets()
-        })
+        this.events.once('destroy', () =>
+            this.world.interface.unloadWidgets()
+        )
 
         this.interface.main.snowballFactory.clearBalls()
         this.soundManager.stopAllButMusic()
