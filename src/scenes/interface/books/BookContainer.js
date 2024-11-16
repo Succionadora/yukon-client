@@ -14,12 +14,10 @@ export default class BookContainer extends BaseDynamicWidget {
         this.buttons
 
         this.isBook = true
-    }
 
-    show() {
-        this.setCoins(this.world.client.coins)
-
-        super.show()
+        this.scene.events.once('update', () =>
+            this.setCoins(this.world.client.coins)
+        )
     }
 
     showPage(page) {
