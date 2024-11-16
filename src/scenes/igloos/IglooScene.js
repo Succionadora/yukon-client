@@ -266,9 +266,9 @@ export default class IglooScene extends RoomScene {
     }
 
     stop() {
-       this.interface.hideIglooEdit()
+        this.interface.hideIglooEdit()
 
-       super.stop()
+        super.stop()
     }
 
     /*========== Physics ==========*/
