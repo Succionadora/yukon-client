@@ -187,6 +187,10 @@ export default class InterfaceController extends BaseScene {
         })
     }
 
+    getColor(id) {
+        return this.crumbs.colors[id - 1] || this.crumbs.colors[0]
+    }
+
     resetCursor(scene = this) {
         if (!this.lastScene) {
             this.lastScene = scene

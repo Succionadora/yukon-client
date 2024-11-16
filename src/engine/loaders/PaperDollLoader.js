@@ -30,7 +30,7 @@ export default class PaperDollLoader extends BaseLoader {
     }
 
     setColor(id) {
-        this.paperDoll.body.tint = this.world.getColor(id)
+        this.paperDoll.body.tint = this.interface.getColor(id)
     }
 
     loadItems(penguin) {

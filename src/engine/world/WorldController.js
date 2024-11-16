@@ -106,7 +106,7 @@ export default class WorldController extends BaseScene {
     }
 
     getColor(id) {
-        return this.crumbs.colors[id - 1] || this.crumbs.colors[0]
+        return this.interface.getColor(id)
     }
 
     getWorldTime() {
