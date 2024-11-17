@@ -6,7 +6,7 @@ export const preload = {
 
 /* START OF COMPILED CODE */
 
-import BaseContainer from "../../base/BaseContainer";
+import BaseDynamicWidget from "../../base/BaseDynamicWidget";
 import Interactive from "../../components/Interactive";
 import ProgressView from "./views/ProgressView";
 import Separator from "./Separator";
@@ -14,7 +14,7 @@ import Button from "../../components/Button";
 /* START-USER-IMPORTS */
 /* END-USER-IMPORTS */
 
-export default class NinjaProgress extends BaseContainer {
+export default class NinjaProgress extends BaseDynamicWidget {
 
     constructor(scene, x, y) {
         super(scene, x ?? 760, y ?? 480);
@@ -87,6 +87,9 @@ export default class NinjaProgress extends BaseContainer {
         this.ninjaCards
 
         this.createCardsViewMask()
+        this.addListeners()
+
+        scene.events.once('update', () => this.network.send('get_ninja'))
 
         /* END-USER-CTR-CODE */
     }
@@ -102,29 +105,10 @@ export default class NinjaProgress extends BaseContainer {
         this.network.events.off('get_ninja', this.handleGetNinja, this)
     }
 
-    show() {
-        this.addListeners()
-
-        this.network.send('get_ninja')
-
-        super.show()
-    }
-
     close() {
         this.removeListeners()
-        this.reset()
 
         super.close()
-    }
-
-    reset() {
-        this.separator.close()
-        this.separator.cards.setCards([])
-
-        this.progress.close()
-        this.progress.setCardsNum(0)
-
-        this.separator.cards.page = 1
     }
 
     handleGetNinja(args) {
