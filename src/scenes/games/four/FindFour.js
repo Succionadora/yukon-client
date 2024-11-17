@@ -122,8 +122,10 @@ export default class FindFour extends BaseDynamicWidget {
 
         /* START-USER-CTR-CODE */
 
+        this.timerEvents = []
         this.counters = []
         this.buttons = []
+
         this.createButtons()
 
         this.map = null
@@ -329,6 +331,8 @@ export default class FindFour extends BaseDynamicWidget {
             },
             repeat: y
         })
+
+        this.timerEvents.push(timer)
     }
 
     updateTurn(turn) {
@@ -363,6 +367,7 @@ export default class FindFour extends BaseDynamicWidget {
     leaveTable() {
         this.removeListeners()
 
+        this.scene.time.removeEvent(this.timerEvents)
         this.world.client.sendLeaveSeat()
 
         super.close()
