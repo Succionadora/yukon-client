@@ -268,8 +268,6 @@ export default class Map extends BaseDynamicWidget {
         }
 
         this.world.client.sendJoinRoom(id, room.key, room.x, room.y, 80)
-
-        this.close()
     }
 
     /* END-USER-CODE */
