@@ -28,6 +28,9 @@ export default class InterfaceController extends BaseScene {
 
         // Last scene interacted with
         this.lastScene
+
+        // Active paperdolls
+        this.paperDolls = []
     }
 
     get loading() {
@@ -185,6 +188,14 @@ export default class InterfaceController extends BaseScene {
                 book.setCoins(coins)
             }
         })
+    }
+
+    addPaperDoll(paperDoll) {
+        this.paperDolls.push(paperDoll)
+    }
+
+    removePaperDoll(paperDoll) {
+        this.paperDolls = this.paperDolls.filter(i => i !== paperDoll)
     }
 
     getColor(id) {

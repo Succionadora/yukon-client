@@ -43,6 +43,9 @@ export default class PaperDoll extends BaseContainer {
         this.paperDollLoader = new PaperDollLoader(scene, this)
         this.isInputEnabled = false
 
+        this.interface.addPaperDoll(this)
+        this.once('destroy', () => this.interface.removePaperDoll(this))
+
         /* END-USER-CTR-CODE */
     }
 
