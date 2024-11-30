@@ -99,6 +99,12 @@ export default class PaperDollLoader extends BaseLoader {
 
         let item = this.paperDoll.items[slot]
 
+        this.memory.register(
+            key,
+            staleCheck.bind(this.memory, itemId),
+            unload.bind(this.memory, key)
+        )
+
         if (isBack) {
             this.addBack(key, slot, item)
             return
@@ -222,4 +228,20 @@ export default class PaperDollLoader extends BaseLoader {
         return this.paperDoll.list.filter(item => item.isBack)
     }
 
+}
+
+function staleCheck(itemId) {
+    for (const paperDoll of this.interface.paperDolls) {
+        const items = Object.values(paperDoll.items).map(item => item.id)
+
+        if (items.includes(itemId)) {
+            return false
+        }
+    }
+
+    return true
+}
+
+function unload(key) {
+    this.unloadTexture(key)
 }
