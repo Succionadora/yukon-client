@@ -88,7 +88,7 @@ export default class MemoryManager extends BaseScene {
                     break
 
                 case 'multiatlas':
-                    this.unloadMultiatlas(file.key)
+                    this.unloadTexture(file.key)
                     break
             }
         }
@@ -110,7 +110,7 @@ export default class MemoryManager extends BaseScene {
         this.cache.json.remove(key)
     }
 
-    unloadMultiatlas(key) {
+    unloadTexture(key) {
         this.textures.remove(key)
         this.unloadTextureAnims(key)
     }

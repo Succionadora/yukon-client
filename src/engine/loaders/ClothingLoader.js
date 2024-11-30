@@ -134,5 +134,5 @@ function staleCheck(item) {
 }
 
 function unload(key) {
-    this.unloadMultiatlas(key)
+    this.unloadTexture(key)
 }
