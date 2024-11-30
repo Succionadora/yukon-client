@@ -87,6 +87,7 @@ export default class MemoryManager extends BaseScene {
                     this.unloadJson(file.key)
                     break
 
+                case 'image':
                 case 'multiatlas':
                     this.unloadTexture(file.key)
                     break
