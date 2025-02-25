@@ -74,8 +74,8 @@ export default class ClientController {
 
     // Initialization
     initInventory() {
-        const inventory = Object.fromEntries(this.slots.map(slot => [slot, []]))
-        
+        const inventory = Object.fromEntries(this.slots.map(slot => [slot, []])) 
+
         this.inventory.forEach(itemStr => {
             const itemId = parseInt(itemStr)
             const itemData = this.crumbs.items[itemId]
@@ -192,6 +192,15 @@ export default class ClientController {
         })
     }
 
+    sendJoinLastRoom() {
+        if (!this.world.lastRoom || (this.world.room && this.world.lastRoom === this.world.room.id)) return
+
+        const room = this.crumbs.scenes.rooms[this.world.lastRoom]
+        if (room) {
+            this.sendJoinRoom(this.world.lastRoom, room.key, room.x, room.y, 80)
+        }
+    }
+
     sendJoinIgloo(id) {
         if (!this.world.room.isIgloo || this.world.room.id !== id) {
             this.sendJoinRequest('join_igloo', 'joining', 'igloo', {
@@ -202,23 +211,21 @@ export default class ClientController {
         }
     }
 
-    // Postcard management
-    sortPostcards() {
-        this.postcards.sort((a, b) => b.sendDateTimestamp - a.sendDateTimestamp)
+    sendJoinTable(id) {
+        this.network.send('join_table', { table: id })
     }
 
-    refreshPostcards() {
-        this.sortPostcards()
-        if (this.interface.main.mail?.visible) {
-            this.interface.main.mail.goToFirstPage()
+    sendTour() {
+        if (!this.isTourGuide) {
+            this.interface.prompt.showError('Sorry, you must wear the tour guide\nhat to use this feature')
+            return
         }
-        this.interface.main.updateMailCount()
-    }
 
-    // Seat management
-    getSeatWorldPos(seat) {
-        const matrix = seat.getWorldTransformMatrix()
-        return { x: matrix.getX(0, 0), y: matrix.getY(0, 0) }
+        const roomName = this.world.room.key.toLowerCase()
+        if (roomName in this.crumbs.tour_messages) {
+            this.interface.showTourMessage(this.id, this.world.room.id)
+            this.network.send('send_tour', { roomId: this.world.room.id })
+        }
     }
 
     sendMoveToSeat(id, seatNumber, type = 'table') {
@@ -238,6 +245,49 @@ export default class ClientController {
         }
     }
 
+    sendLeaveSeat() {
+        if (!this.activeSeat) return
+
+        const done = this.activeSeat.donePoint
+        if (done) {
+            const pos = this.getSeatWorldPos(done)
+            this.sendMove(pos.x, pos.y)
+        }
+
+        this.activeSeat = null
+        this.world.events.emit('leftseat')
+    }
+
+    // Postcard management
+    addPostcard(postcard) {
+        this.postcards.push(postcard)
+        this.refreshPostcards()
+    }
+
+    sortPostcards() {
+    this.postcards.sort((a, b) => 
+        new Date(b.sendDate) - new Date(a.sendDate)
+    )
+}
+
+    filterPostcards(filter) {
+        this.postcards = this.postcards.filter(postcard => filter(postcard))
+        this.refreshPostcards()
+    }
+
+    refreshPostcards() {
+        this.sortPostcards()
+        if (this.interface.main.mail?.visible) {
+            this.interface.main.mail.goToFirstPage()
+        }
+        this.interface.main.updateMailCount()
+    }
+
+    // Pet handling
+    startWalkingPet(petId) {
+        this.network.send('pet_start_walk', { id: petId })
+    }
+
     // Helper methods
     get isBalloonThrottled() {
         const now = Date.now()
@@ -246,7 +296,12 @@ export default class ClientController {
         return throttled
     }
 
-    // Key actions (moved to object literal for clarity)
+    getSeatWorldPos(seat) {
+        const matrix = seat.getWorldTransformMatrix()
+        return { x: matrix.getX(0, 0), y: matrix.getY(0, 0) }
+    }
+
+    // Key actions
     keyActions = {
         send_frame: (id) => this.sendFrame(id),
         send_wave: () => this.sendFrame(25, false),
@@ -262,11 +317,12 @@ export default class ClientController {
             }
         },
         send_joke: () => {
-            if (this.crumbs.jokes.length) {
+            if (this.crumbs.jokes?.length) {
                 const jokeId = Phaser.Math.Between(0, this.crumbs.jokes.length - 1)
                 this.interface.showTextBalloon(this.id, this.crumbs.jokes[jokeId], false)
                 this.network.send('send_joke', { joke: jokeId })
             }
-        }
+        },
+        send_tour: () => this.sendTour()
     }
-}
+} 
