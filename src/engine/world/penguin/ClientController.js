@@ -1,91 +1,51 @@
 import PathEngine from './pathfinding/PathEngine'
 
-
 export default class ClientController {
+    // Constants
+    THROTTLE_DELAY = 100
+    ONE_DAY_MS = 86400000
 
     constructor(world, args) {
         this.world = world
-
         this.interface = world.interface
         this.network = world.network
         this.crumbs = world.crumbs
-
         this.getString = world.getString
 
-        // Assign user attributes
-        let { user, ...attributes } = args
+        // User attributes
+        const { user, ...attributes } = args
         Object.assign(this, attributes)
-
+        
         this.id = user.id
-        this.joinTime = user.joinTime
+        this.joinTime = Date.parse(user.joinTime)  // Store as timestamp
 
+        // State management
         this.iglooOpen = false
+        this.lastRoom = null
+        this.activeSeat = null
+        this.lastSledId = null
+        this.emoteKeyPressed = false
+        this.lockRotation = false
+        this.lastBalloon = Date.now()
 
-        this.lastRoom
-        this.activeSeat
-        this.lastSledId
-
-        // Item inventory
+        // Inventory system
         this.slots = ['color', 'head', 'face', 'neck', 'body', 'hand', 'feet', 'flag', 'photo', 'award']
         this.inventory = this.initInventory()
-
         this.sortPostcards()
 
-        // Reference to ClientPenguin object
-        this.penguin
-
-        // If expecting emote key combo
-        this.emoteKeyPressed = false
-
-        this.lastBalloon = Date.now()
-        this.throttleDelay = 100
-
-        // Input
+        // Input handling
         this.keys = this.crumbs.quick_keys.keys
         this.emotes = this.crumbs.quick_keys.emotes
-
-        this.keyActions = {
-            'send_frame': (id) => this.sendFrame(id),
-            'send_wave': () => this.sendFrame(25, false),
-            'send_sit': () => this.sendSit(this.input.mousePointer),
-
-            'show_crosshair': () => this.showCrosshair(),
-
-            'emote_key': () => this.emoteKeyPressed = true,
-            'send_emote': (id) => this.sendEmote(id),
-            'send_safe': (id) => this.sendSafe(id),
-            'send_joke': () => this.sendJoke()
-        }
-
-        this.lockRotation = false
-
-        this.input.on('pointermove', (pointer) => this.onPointerMove(pointer))
-
-        this.input.keyboard.on('keydown', (event) => this.onKeyDown(event))
+        this.setupInputHandlers()
     }
 
-    get isTweening() {
-        return this.penguin.isTweening
-    }
-
-    get visible() {
-        return this.penguin.visible
+    // Getters
+    get isActionAllowed() {
+        return this.penguin?.visible && !this.penguin?.isTweening
     }
 
     get input() {
         return this.interface.main.input
-    }
-
-    get isBalloonThrottled() {
-        let time = Date.now()
-
-        if (time - this.lastBalloon < this.throttleDelay) {
-            return true
-        }
-
-        this.lastBalloon = time
-
-        return false
     }
 
     get isModerator() {
@@ -101,10 +61,7 @@ export default class ClientController {
     }
 
     get daysOld() {
-        const oneDay = 1000 * 60 * 60 * 24
-        const timeDiff = Date.now() - Date.parse(this.joinTime)
-
-        return Math.round(timeDiff / oneDay)
+        return Math.floor((Date.now() - this.joinTime) / this.ONE_DAY_MS)
     }
 
     get mailCount() {
@@ -115,236 +72,173 @@ export default class ClientController {
         return this.postcards.filter(postcard => !postcard.hasRead).length
     }
 
+    // Initialization
     initInventory() {
-         // Generates object from slots in format: { color: [], head: [], ... }
-        let inventory = Object.fromEntries(this.slots.map(slot => [slot, []]))
+        const inventory = Object.fromEntries(this.slots.map(slot => [slot, []])) 
 
-        // Assigns inventory list to slots
-        for (let item of this.inventory) {
-            item = parseInt(item)
-
-            if (!(item in this.crumbs.items)) {
-                continue
+        this.inventory.forEach(itemStr => {
+            const itemId = parseInt(itemStr)
+            const itemData = this.crumbs.items[itemId]
+            
+            if (itemData) {
+                const slotIndex = itemData.type - 1
+                const slot = this.slots[slotIndex]
+                if (slot) inventory[slot].push(itemId)
             }
-
-            let type = this.crumbs.items[item].type
-            let slot = this.slots[type - 1]
-
-            inventory[slot].push(item)
-        }
+        })
 
         return inventory
     }
 
-    onPointerMove(pointer) {
+    setupInputHandlers() {
+        this.input.on('pointermove', pointer => this.handlePointerMove(pointer))
+        this.input.on('pointerup', (pointer, target) => this.handlePointerUp(pointer, target))
+        this.input.keyboard.on('keydown', event => this.handleKeyDown(event))
+    }
+
+    // Input handling
+    handlePointerMove(pointer) {
         if (this.interface.main.crosshair?.visible) {
             this.interface.main.onCrosshairMove(pointer)
         }
 
-        if (!this.visible || this.isTweening || this.lockRotation) {
-            return
-        }
-
-        this.penguin.rotate(pointer.x, pointer.y)
-    }
-
-    onPointerUp(pointer, target) {
-        if (pointer.button != 0 || !this.visible || this.activeSeat) {
-            return
-        }
-
-        // Block movement when clicking a button
-        if (target[0] && target[0].isButton) {
-            return
-        }
-
-        this.sendMove(pointer.x, pointer.y)
-    }
-
-    onKeyDown(event) {
-        let key = event.key.toLowerCase()
-
-        if (this.emoteKeyPressed) {
-            this.processEmote(key)
-        } else {
-            this.processKey(key)
+        if (this.isActionAllowed && !this.lockRotation) {
+            this.penguin.rotate(pointer.x, pointer.y)
         }
     }
 
-    processEmote(key) {
+    handlePointerUp(pointer, target) {
+        if (pointer.button === 0 && this.isActionAllowed && !this.activeSeat) {
+            if (!target[0]?.isButton) {
+                this.sendMove(pointer.x, pointer.y)
+            }
+        }
+    }
+
+    handleKeyDown(event) {
+        const key = event.key.toLowerCase()
+        this.emoteKeyPressed ? this.handleEmoteKey(key) : this.handleActionKey(key)
+    }
+
+    handleEmoteKey(key) {
         this.emoteKeyPressed = false
-
         if (key in this.emotes) {
             this.sendEmote(this.emotes[key])
         }
     }
 
-    processKey(key) {
-        if (key in this.keys) {
-            let k = this.keys[key]
-
-            this.keyActions[k.action](k.value || null)
+    handleActionKey(key) {
+        const keyConfig = this.keys[key]
+        if (keyConfig) {
+            const action = this.keyActions[keyConfig.action]
+            action(keyConfig.value)
         }
     }
 
+    // Network actions
     sendMove(x, y, frame = null) {
-        if (!this.visible) {
-            return
+        if (this.isActionAllowed) {
+            this.penguin.move(x, y, frame)
         }
-
-        this.penguin.move(x, y, frame)
     }
 
     sendFrame(frame, set = true) {
-        if (!this.visible || this.isTweening) {
-             return
+        if (this.isActionAllowed) {
+            this.lockRotation = true
+            this.penguin.playFrame(frame, set)
+            this.network.send('send_frame', { set, frame })
         }
-
-        this.lockRotation = true
-
-        this.penguin.playFrame(frame, set)
-        this.network.send('send_frame', { set: set, frame: frame })
     }
 
     sendSit(pointer) {
-        if (!this.visible || this.isTweening) {
-            return
+        if (this.isActionAllowed) {
+            this.lockRotation = true
+            this.penguin.sit(pointer.x, pointer.y)
         }
-
-        this.lockRotation = true
-
-        this.penguin.sit(pointer.x, pointer.y)
     }
 
     sendSnowball(x, y) {
-        if (!this.visible || this.isTweening) {
-            return
+        if (this.isActionAllowed) {
+            this.lockRotation = true
+            this.interface.main.snowballFactory.throwBall(this.id, x, y)
+            this.network.send('snowball', { x, y })
         }
-
-        this.lockRotation = true
-
-        this.interface.main.snowballFactory.throwBall(this.id, x, y)
-        this.network.send('snowball', { x: x, y: y })
     }
 
     sendEmote(emote) {
-        if (!this.visible || this.isBalloonThrottled) {
-            return
-        }
-
+        if (this.isBalloonThrottled || !this.isActionAllowed) return
+        
         this.interface.showEmoteBalloon(this.id, emote)
-        this.network.send('send_emote', { emote: emote })
+        this.network.send('send_emote', { emote })
     }
 
-    sendSafe(safe) {
-        if (!this.visible || this.isBalloonThrottled) {
+    sendJoinRequest(type, messageKey, roomName, data) {
+        if (this.activeSeat) {
+            this.interface.prompt.showError('Please exit your game before leaving the room')
             return
         }
 
-        let message = this.interface.main.safe.safeMessagesMap[safe]
-
-        this.interface.showTextBalloon(this.id, message)
-        this.network.send('send_safe', { safe: safe })
-    }
-
-    sendJoke() {
-        const randomJokeId = Phaser.Math.Between(0, this.crumbs.jokes.length - 1)
-
-        this.interface.showTextBalloon(this.id, this.crumbs.jokes[randomJokeId], false)
-        this.network.send('send_joke', { joke: randomJokeId })
-    }
-
-    sendTour() {
-        if (this.penguin.equipped.head.id !== 428) {
-            this.interface.prompt.showError('Sorry, you must wear the tour guide\nhat to use this feature')
-            return
-        }
-
-        const roomName = this.world.room.key.toLowerCase()
-
-        if (roomName in this.crumbs.tour_messages) {
-            const roomId = this.world.room.id
-
-            this.interface.showTourMessage(this.id, roomId)
-            this.network.send('send_tour', { roomId })
-        }
-    }
-
-    showCrosshair() {
-        if (!this.visible || !this.interface.main) {
-            return
-        }
-
-        this.interface.main.onSnowballClick()
+        this.interface.showLoading(this.getString(messageKey, roomName))
+        this.lockRotation = false
+        this.network.send(type, data)
     }
 
     sendJoinRoom(id, name, x = 0, y = 0, randomRange = 40) {
-        if (this.activeSeat) {
-            return this.interface.prompt.showError('Please exit your game before leaving the room')
-        }
-
-        this.interface.showLoading(this.getString('joining', name))
-
-        this.lockRotation = false
-
-        let random = PathEngine.getRandomPos(x, y, randomRange)
-        this.network.send('join_room', { room: id, x: random.x, y: random.y })
+        const randomPos = PathEngine.getRandomPos(x, y, randomRange)
+        this.sendJoinRequest('join_room', 'joining', name, {
+            room: id,
+            x: randomPos.x,
+            y: randomPos.y
+        })
     }
 
     sendJoinLastRoom() {
-        if (!this.world.lastRoom || this.world.room && this.world.lastRoom === this.world.room.id) {
-            return
-        }
+        if (!this.world.lastRoom || (this.world.room && this.world.lastRoom === this.world.room.id)) return
 
         const room = this.crumbs.scenes.rooms[this.world.lastRoom]
-
         if (room) {
             this.sendJoinRoom(this.world.lastRoom, room.key, room.x, room.y, 80)
         }
     }
 
     sendJoinIgloo(id) {
-        if (this.world.room.isIgloo && this.world.room.id == id) {
-            return
+        if (!this.world.room.isIgloo || this.world.room.id !== id) {
+            this.sendJoinRequest('join_igloo', 'joining', 'igloo', {
+                igloo: id,
+                x: 0,
+                y: 0
+            })
         }
-
-        if (this.activeSeat) {
-            return this.interface.prompt.showError('Please exit your game before leaving the room')
-        }
-
-        this.interface.showLoading(this.getString('joining', 'igloo'))
-
-        this.lockRotation = false
-
-        this.network.send('join_igloo', { igloo: id, x: 0, y: 0 })
     }
 
     sendJoinTable(id) {
         this.network.send('join_table', { table: id })
     }
 
-    sendMoveToSeat(id, seat, type = 'table') {
-        let container
-
-        switch (type) {
-            case 'table':
-                container = this.world.room.getTable(id)
-                break
-            case 'waddle':
-                container = this.world.room.getWaddle(id)
-                break
-        }
-
-        if (!container) {
+    sendTour() {
+        if (!this.isTourGuide) {
+            this.interface.prompt.showError('Sorry, you must wear the tour guide\nhat to use this feature')
             return
         }
 
-        seat = container[`seat${seat}`]
+        const roomName = this.world.room.key.toLowerCase()
+        if (roomName in this.crumbs.tour_messages) {
+            this.interface.showTourMessage(this.id, this.world.room.id)
+            this.network.send('send_tour', { roomId: this.world.room.id })
+        }
+    }
 
+    sendMoveToSeat(id, seatNumber, type = 'table') {
+        const container = type === 'table' 
+            ? this.world.room.getTable(id) 
+            : this.world.room.getWaddle(id)
+
+        if (!container) return
+
+        const seat = container[`seat${seatNumber}`]
         if (seat) {
             this.activeSeat = seat
-
-            let pos = this.getSeatWorldPos(seat)
+            const pos = this.getSeatWorldPos(seat)
             this.sendMove(pos.x, pos.y, seat.sitFrame)
         } else {
             this.activeSeat = true
@@ -352,14 +246,11 @@ export default class ClientController {
     }
 
     sendLeaveSeat() {
-        if (!this.activeSeat) {
-            return
-        }
+        if (!this.activeSeat) return
 
-        let done = this.activeSeat.donePoint
-
+        const done = this.activeSeat.donePoint
         if (done) {
-            let pos = this.getSeatWorldPos(done)
+            const pos = this.getSeatWorldPos(done)
             this.sendMove(pos.x, pos.y)
         }
 
@@ -367,47 +258,71 @@ export default class ClientController {
         this.world.events.emit('leftseat')
     }
 
-    getSeatWorldPos(seat) {
-        let matrix = seat.getWorldTransformMatrix()
-
-        return {
-            x: matrix.getX(0, 0),
-            y: matrix.getY(0, 0)
-        }
-    }
-
+    // Postcard management
     addPostcard(postcard) {
         this.postcards.push(postcard)
-
         this.refreshPostcards()
     }
 
-    /**
-     * Sort by newest first.
-     */
     sortPostcards() {
-        this.postcards.sort((a, b) => new Date(b.sendDate) - new Date(a.sendDate))
-    }
+    this.postcards.sort((a, b) => 
+        new Date(b.sendDate) - new Date(a.sendDate)
+    )
+}
 
     filterPostcards(filter) {
         this.postcards = this.postcards.filter(postcard => filter(postcard))
-
         this.refreshPostcards()
     }
 
     refreshPostcards() {
         this.sortPostcards()
-
         if (this.interface.main.mail?.visible) {
-            // Read mail before updating count
             this.interface.main.mail.goToFirstPage()
         }
-
         this.interface.main.updateMailCount()
     }
 
+    // Pet handling
     startWalkingPet(petId) {
         this.network.send('pet_start_walk', { id: petId })
     }
 
-}
+    // Helper methods
+    get isBalloonThrottled() {
+        const now = Date.now()
+        const throttled = now - this.lastBalloon < this.THROTTLE_DELAY
+        if (!throttled) this.lastBalloon = now
+        return throttled
+    }
+
+    getSeatWorldPos(seat) {
+        const matrix = seat.getWorldTransformMatrix()
+        return { x: matrix.getX(0, 0), y: matrix.getY(0, 0) }
+    }
+
+    // Key actions
+    keyActions = {
+        send_frame: (id) => this.sendFrame(id),
+        send_wave: () => this.sendFrame(25, false),
+        send_sit: () => this.sendSit(this.input.mousePointer),
+        show_crosshair: () => this.interface.main.onSnowballClick(),
+        emote_key: () => this.emoteKeyPressed = true,
+        send_emote: (id) => this.sendEmote(id),
+        send_safe: (id) => {
+            if (!this.isBalloonThrottled && this.isActionAllowed) {
+                const message = this.interface.main.safe.safeMessagesMap[id]
+                this.interface.showTextBalloon(this.id, message)
+                this.network.send('send_safe', { safe: id })
+            }
+        },
+        send_joke: () => {
+            if (this.crumbs.jokes?.length) {
+                const jokeId = Phaser.Math.Between(0, this.crumbs.jokes.length - 1)
+                this.interface.showTextBalloon(this.id, this.crumbs.jokes[jokeId], false)
+                this.network.send('send_joke', { joke: jokeId })
+            }
+        },
+        send_tour: () => this.sendTour()
+    }
+} 
