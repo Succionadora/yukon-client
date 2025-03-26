@@ -19,7 +19,7 @@ These instructions will get you a copy of the project up and running on your loc
 ### Prerequisites
 
 * [Node.js](https://nodejs.org/en/)
-* [yukon-server][(https://github.com/succionadora/yukon-server) 
+* [yukon-server](https://github.com/succionadora/yukon-server)
 * assets
 
 ### Installation
