@@ -19,7 +19,7 @@ These instructions will get you a copy of the project up and running on your loc
 ### Prerequisites
 
 * [Node.js](https://nodejs.org/en/)
-* [yukon-server](https://github.com/wizguin/yukon-server)
+* [yukon-server][(](https://github.com/succionadora/yukon-server) 
 * assets
 
 ### Installation
@@ -27,7 +27,7 @@ These instructions will get you a copy of the project up and running on your loc
 1. Clone this repository.
 
 ```console
-git clone https://github.com/wizguin/yukon
+git clone https://github.com/Succionadora/yukon-client
 ```
 
 2. Install node dependencies.
@@ -76,7 +76,7 @@ If you'd like to use the included PHP account registration locally, you must hos
 '/create/scripts/php': 'http://localhost:80'
 ```
 
-See [here](https://github.com/wizguin/yukon-server#account-creation) for a simpler way to create accounts locally.
+See [here](https://github.com/succionadora/yukon-server#account-creation) for a simpler way to create accounts locally.
 
 ## Production Usage
 
